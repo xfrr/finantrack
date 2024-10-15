@@ -1,0 +1,51 @@
+name: finantrack
+
+networks:
+  finantrack-network:
+    driver: bridge
+
+services:
+  finances-manager:
+    image: finances-manager:local
+    entrypoint:
+      ['air', '-c', '/app/deployments/docker/finances-manager/.air.toml']
+    build:
+      context: ../../
+      dockerfile: ./deployments/docker/debug.go.Dockerfile
+      args:
+        - APP_NAME=finances-manager
+    ports:
+      # http rest api
+      - '6000:6000'
+    environment:
+      - FINANCES_MANAGER_HTTP_SERVER_PORT=6000
+      - FINANCES_MANAGER_DATABASE_CONNECTION_STRING=${FINANCES_MANAGER_DATABASE_CONNECTION_STRING}
+      - OTEL_EXPORTER_OTLP_ENDPOINT=jaeger:4317
+    depends_on:
+      - database
+    volumes:
+      - ../../:/app
+    networks:
+      - finantrack-network
+    links:
+      - database
+
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    container_name: jaeger
+    ports:
+      - '16686:16686' # Jaeger UI
+      - '14250:14250' # For OpenTelemetry gRPC traces
+      - '14268:14268' # For OpenTelemetry HTTP traces
+      - '4317' # For gRPC traces
+    environment:
+      - COLLECTOR_ZIPKIN_HTTP_PORT=9411 # Optional: Zipkin-compatible endpoint
+    networks:
+      - finantrack-network
+
+  database:
+    image: mongo:latest
+    ports:
+      - '27017:27017'
+    networks:
+      - finantrack-network

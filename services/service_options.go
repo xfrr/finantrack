@@ -28,7 +28,10 @@ func NewService(name string, opts ...InitializeOption) *Base {
 
 type Config struct {
 	HTTPServerPort   string
-	DatabaseURI      string
+	DatabaseHost     string
+	DatabasePort     string
+	DatabaseUser     string
+	DatabasePass     string
 	DatabaseName     string
 	DatabaseEngine   DatabaseEngineType
 	Environment      string
@@ -53,9 +56,27 @@ func DatabaseEngine(engine DatabaseEngineType) DatabaseOption {
 	}
 }
 
-func DatabaseURI(uri string) DatabaseOption {
+func DatabaseHost(host string) DatabaseOption {
 	return func(s *Base) {
-		s.cfg.DatabaseURI = uri
+		s.cfg.DatabaseHost = host
+	}
+}
+
+func DatabasePort(port string) DatabaseOption {
+	return func(s *Base) {
+		s.cfg.DatabasePort = port
+	}
+}
+
+func DatabaseUser(user string) DatabaseOption {
+	return func(s *Base) {
+		s.cfg.DatabaseUser = user
+	}
+}
+
+func DatabasePass(pass string) DatabaseOption {
+	return func(s *Base) {
+		s.cfg.DatabasePass = pass
 	}
 }
 

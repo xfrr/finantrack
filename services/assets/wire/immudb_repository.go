@@ -2,48 +2,85 @@ package assets
 
 import (
 	"context"
-	"database/sql"
-	"log"
+	"strconv"
 	"time"
 
 	"github.com/xfrr/finantrack/internal/shared/xevent"
+	"github.com/xfrr/finantrack/internal/shared/ximmudb"
 	"github.com/xfrr/finantrack/services"
 
 	assetdomain "github.com/xfrr/finantrack/internal/contexts/assets/domain"
 	assetimmudb "github.com/xfrr/finantrack/internal/contexts/assets/immudb"
+	assetimmudbmigrations "github.com/xfrr/finantrack/internal/contexts/assets/immudb/migrations"
+)
+
+const (
+	DefaultTimeout      = 5 * time.Second
+	DefaultMaxOpenConns = 10
+	DefaultMaxLife      = 10 * time.Minute
+	DefaultMaxIdleCons  = 10
 )
 
 type immudbRepositoryFactory struct {
-	dbURI          string
+	dbHost         string
+	dbPort         string
+	dbUser         string
+	dbPass         string
 	dbName         string
 	eventsRegistry xevent.Registry
 }
 
 func (f immudbRepositoryFactory) NewAssetEventRepository() services.RepositoryFactoryFunc[assetdomain.Repository] {
 	return func(ctx context.Context) (assetdomain.Repository, func() error, error) {
-		ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
-		defer cancel()
-
-		db, err := sql.Open("immudb", f.dbURI)
+		port, err := strconv.Atoi(f.dbPort)
 		if err != nil {
-			log.Fatal(err)
+			return nil, nil, err
 		}
-		defer db.Close()
 
-		return assetimmudb.NewImmuRepository(db), func() error {
-			return nil
+		db, err := ximmudb.NewImmuDBClient(ctx, ximmudb.Config{
+			Host:         f.dbHost,
+			Port:         port,
+			User:         f.dbUser,
+			Pass:         f.dbPass,
+			DB:           "defaultdb",
+			Timeout:      DefaultTimeout,
+			MaxOpenConns: DefaultMaxOpenConns,
+			MaxLife:      DefaultMaxLife,
+			MaxIdleCons:  DefaultMaxIdleCons,
+		})
+		if err != nil {
+			return nil, nil, err
+		}
+
+		err = ximmudb.Migrate(db, []ximmudb.Migration{
+			assetimmudbmigrations.NewCreateAssetsDatabase(),
+			assetimmudbmigrations.NewCreateAssetEventsTable(),
+		})
+		if err != nil {
+			return nil, nil, err
+		}
+
+		repo, err := assetimmudb.NewImmuRepository(db)
+		if err != nil {
+			return nil, nil, err
+		}
+
+		return repo, func() error {
+			return db.Close()
 		}, nil
 	}
 }
 
 func newImmuDBRepositoryFactory(
-	dbURI string,
-	dbName string,
+	cfg services.Config,
 	eventsRegistry xevent.Registry,
 ) immudbRepositoryFactory {
 	return immudbRepositoryFactory{
-		dbURI:          dbURI,
-		dbName:         dbName,
+		dbHost:         cfg.DatabaseHost,
+		dbPort:         cfg.DatabasePort,
+		dbUser:         cfg.DatabaseUser,
+		dbPass:         cfg.DatabasePass,
+		dbName:         cfg.DatabaseName,
 		eventsRegistry: eventsRegistry,
 	}
 }

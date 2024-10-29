@@ -17,17 +17,18 @@ services:
       - '6000:6000'
     environment:
       - FINANCES_MANAGER_HTTP_SERVER_PORT=6000
-      - FINANCES_MANAGER_DB_URI=${FINANCES_MANAGER_DB_URI}
+      - FINANCES_MANAGER_DB_HOST=${FINANCES_MANAGER_DB_HOST}
+      - FINANCES_MANAGER_DB_PORT=${FINANCES_MANAGER_DB_PORT}
+      - FINANCES_MANAGER_DB_USER=${FINANCES_MANAGER_DB_USER}
+      - FINANCES_MANAGER_DB_PASS=${FINANCES_MANAGER_DB_PASS}
+      - FINANCES_MANAGER_DB_NAME=${FINANCES_MANAGER_DB_NAME}
+      - FINANCES_MANAGER_DB_ENGINE=${FINANCES_MANAGER_DB_ENGINE}
       - OTEL_EXPORTER_OTLP_ENDPOINT=jaeger:4317
-    depends_on:
-      - es-mongodb
     working_dir: /app
     volumes:
       - ../..:/app
     networks:
       - finantrack-network
-    links:
-      - es-mongodb
 
   web:
     image: web:local
@@ -44,6 +45,8 @@ services:
       - ../..:/app
     networks:
       - finantrack-network
+    profiles:
+      - web
 
   jaeger:
     image: jaegertracing/all-in-one:latest
@@ -55,20 +58,5 @@ services:
       - '4317' # For gRPC traces
     environment:
       - COLLECTOR_ZIPKIN_HTTP_PORT=9411 # Optional: Zipkin-compatible endpoint
-    networks:
-      - finantrack-network
-
-  es-mongodb:
-    image: mongo:latest
-    ports:
-      - '27017:27017'
-    networks:
-      - finantrack-network
-
-  es-immudb:
-    image: codenotary/immudb:latest
-    ports:
-      - '3322:3322'
-      - '9497:9497'
     networks:
       - finantrack-network

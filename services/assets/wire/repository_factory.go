@@ -8,8 +8,7 @@ import (
 )
 
 func newRepositoryFactory(
-	dbURI string,
-	dbName string,
+	cfg services.Config,
 	eventsRegistry xevent.Registry,
 ) (services.RepositoryFactory[assetdomain.Repository], error) {
 	repoFactory := services.NewRepositoryFactory[assetdomain.Repository]()
@@ -18,8 +17,7 @@ func newRepositoryFactory(
 	err := repoFactory.RegisterRepository(
 		services.MongoDatabaseEngine,
 		newMongoRepositoryFactory(
-			dbURI,
-			dbName,
+			cfg,
 			eventsRegistry,
 		).NewAssetEventRepository(),
 	)
@@ -31,11 +29,13 @@ func newRepositoryFactory(
 	err = repoFactory.RegisterRepository(
 		services.ImmuDBDatabaseEngine,
 		newImmuDBRepositoryFactory(
-			dbURI,
-			dbName,
+			cfg,
 			eventsRegistry,
 		).NewAssetEventRepository(),
 	)
+	if err != nil {
+		return nil, err
+	}
 
 	return repoFactory, nil
 }

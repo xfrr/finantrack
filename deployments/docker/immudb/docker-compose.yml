@@ -1,0 +1,31 @@
+name: finantrack
+
+networks:
+  finantrack-network:
+    driver: bridge
+
+volumes:
+  finantrack-immudb-data:
+  finantrack-immudb-config:
+  finantrack-immudb-log:
+
+services:
+  es-immudb:
+    image: codenotary/immudb:1.9
+    platform: linux/amd64
+    ports:
+      - 3322:3322 # immudb gRPC server
+      - 8080:8080 # immudb Web Console
+    networks:
+      - finantrack-network
+    volumes:
+      - finantrack-immudb-data:/var/lib/immudb
+      - finantrack-immudb-config:/etc/immudb
+      - finantrack-immudb-log:/var/log/immudb
+    environment:
+      IMMUDB_ADDRESS: 0.0.0.0
+      IMMUDB_PORT: ${FINANCES_MANAGER_DB_PORT}
+      IMMUDB_USER: ${FINANCES_MANAGER_DB_USER}
+      IMMUDB_PWD: ${FINANCES_MANAGER_DB_PASS}
+      IMMUDB_DBNAME: ${FINANCES_MANAGER_DB_NAME}
+      IMMUDB_TOKENSIZE: 64

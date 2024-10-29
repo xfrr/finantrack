@@ -35,20 +35,20 @@ format:
   @swag fmt --dir services/assets/http
 
 # start the docker-compose stack for local development
-up:
-  @docker-compose -f deployments/docker/docker-compose.yml --env-file deployments/docker/.env up -d --build
-
-# start and rebuild the docker-compose stack for local development
-up-build:
-  @docker-compose -f deployments/docker/docker-compose.yml --env-file deployments/docker/.env up --build -d --force-recreate
+up profile:  
+  @docker-compose \
+    -f deployments/docker/docker-compose.yml \
+    -f deployments/docker/{{profile}}/docker-compose.yml \
+    --env-file deployments/docker/{{profile}}/.{{profile}}.env \
+    up -d --build --remove-orphans --force-recreate
 
 # stop the docker-compose stack for local development
-down:
-  @docker-compose -f deployments/docker/docker-compose.yml --env-file deployments/docker/.env down
-
-# restart the docker-compose stack for local development
-restart:
-  @docker-compose -f deployments/docker/docker-compose.yml --env-file deployments/docker/.env restart
+down profile:
+  @docker-compose \
+    -f deployments/docker/docker-compose.yml \
+    -f deployments/docker/{{profile}}/docker-compose.yml \
+    --env-file deployments/docker/{{profile}}/.{{profile}}.env \
+    down --remove-orphans --volumes
 
 # clean up the project's build and test artifacts
 clean:

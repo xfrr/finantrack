@@ -84,8 +84,7 @@ func NewService(opts ...services.InitializeOption) (*Service, error) {
 
 	// Register asset repository factory
 	service.repoFactory, err = newRepositoryFactory(
-		service.Config().DatabaseURI,
-		service.Config().DatabaseName,
+		service.Config(),
 		eventsRegistry,
 	)
 	if err != nil {

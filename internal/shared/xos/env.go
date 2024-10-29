@@ -1,12 +1,22 @@
 package xos
 
-import "os"
+import (
+	"os"
+	"strings"
+)
 
 func GetEnvWithDefault(key, defaultValue string) string {
-	if value, ok := GetEnv(key); ok {
-		return value
+	value, ok := GetEnv(key)
+	if !ok {
+		return defaultValue
 	}
-	return defaultValue
+
+	// unquote value if the default value is a string
+	if strings.HasPrefix(value, "\"") && strings.HasSuffix(value, "\"") {
+		value = strings.Trim(value, "\"")
+	}
+
+	return strings.TrimSpace(value)
 }
 
 func GetEnv(key string) (string, bool) {

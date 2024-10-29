@@ -1,0 +1,22 @@
+name: finantrack
+
+networks:
+  finantrack-network:
+    driver: bridge
+
+volumes:
+  finantrack-mongodb-data:
+
+services:
+  es-mongodb:
+    image: mongo:latest
+    ports:
+      - '${FINANCES_MANAGER_DB_PORT}:${FINANCES_MANAGER_DB_PORT}'
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=${FINANCES_MANAGER_DB_USER}
+      - MONGO_INITDB_ROOT_PASSWORD=${FINANCES_MANAGER_DB_PASS}
+      - MONGO_INITDB_DATABASE=${FINANCES_MANAGER_DB_NAME}
+    volumes:
+      - finantrack-mongodb-data:/data/db
+    networks:
+      - finantrack-network

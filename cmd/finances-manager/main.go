@@ -17,9 +17,15 @@ func main() {
 		environment      = xos.GetEnvWithDefault("FINANCES_MANAGER_ENVIRONMENT", "development")
 		otelCollectorURL = xos.GetEnvWithDefault("OTEL_EXPORTER_OTLP_ENDPOINT", "localhost:4317")
 
-		dbURI    = xos.GetEnvWithDefault("FINANCES_MANAGER_DB_URI", "mongodb://localhost:27017")
+		dbHost   = xos.GetEnvWithDefault("FINANCES_MANAGER_DB_HOST", "localhost")
+		dbPort   = xos.GetEnvWithDefault("FINANCES_MANAGER_DB_PORT", "27017")
+		dbUser   = xos.GetEnvWithDefault("FINANCES_MANAGER_DB_USER", "root")
+		dbPass   = xos.GetEnvWithDefault("FINANCES_MANAGER_DB_PASS", "root")
 		dbName   = xos.GetEnvWithDefault("FINANCES_MANAGER_DB_NAME", "finantrack")
-		dbEngine = services.DatabaseEngineType(xos.GetEnvWithDefault("FINANCES_MANAGER_DB_ENGINE", string(services.MongoDatabaseEngine)))
+		dbEngine = services.DatabaseEngineType(xos.GetEnvWithDefault(
+			"FINANCES_MANAGER_DB_ENGINE",
+			string(services.MongoDatabaseEngine)),
+		)
 	)
 
 	ctx, stopNotification := signal.NotifyContext(context.Background(), os.Interrupt)
@@ -33,7 +39,10 @@ func main() {
 		),
 		services.Database(
 			services.DatabaseEngine(dbEngine),
-			services.DatabaseURI(dbURI),
+			services.DatabaseHost(dbHost),
+			services.DatabasePort(dbPort),
+			services.DatabaseUser(dbUser),
+			services.DatabasePass(dbPass),
 			services.DatabaseName(dbName),
 		),
 	)

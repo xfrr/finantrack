@@ -2,6 +2,7 @@ package assets
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/xfrr/finantrack/internal/shared/xevent"
 	"github.com/xfrr/finantrack/internal/shared/xmongo"
@@ -12,7 +13,10 @@ import (
 )
 
 type mongoRepositoryFactory struct {
-	dbURI          string
+	dbHost         string
+	dbPort         string
+	dbUser         string
+	dbPass         string
 	dbName         string
 	eventsRegistry xevent.Registry
 }
@@ -24,7 +28,7 @@ func (f mongoRepositoryFactory) NewAssetEventRepository() services.RepositoryFac
 		ctx, cancel := context.WithTimeout(ctx, xmongo.MongoConnectDefaultTimeout)
 		defer cancel()
 
-		mongoClient, err := xmongo.NewClient(ctx, f.dbURI, f.dbName)
+		mongoClient, err := xmongo.NewClient(ctx, f.buildURI(), f.dbName)
 		if err != nil {
 			return repo, nil, err
 		}
@@ -46,13 +50,25 @@ func (f mongoRepositoryFactory) NewAssetEventRepository() services.RepositoryFac
 	}
 }
 
+func (f mongoRepositoryFactory) buildURI() string {
+	return fmt.Sprintf("mongodb://%s:%s@%s:%s",
+		f.dbUser,
+		f.dbPass,
+		f.dbHost,
+		f.dbPort,
+	)
+}
+
 func newMongoRepositoryFactory(
-	dbURI, dbName string,
+	cfg services.Config,
 	eventsRegistry xevent.Registry,
 ) mongoRepositoryFactory {
 	return mongoRepositoryFactory{
-		dbURI:          dbURI,
-		dbName:         dbName,
+		dbHost:         cfg.DatabaseHost,
+		dbPort:         cfg.DatabasePort,
+		dbUser:         cfg.DatabaseUser,
+		dbPass:         cfg.DatabasePass,
+		dbName:         cfg.DatabaseName,
 		eventsRegistry: eventsRegistry,
 	}
 }

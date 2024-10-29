@@ -20,9 +20,8 @@ RUN go install github.com/go-delve/delve/cmd/dlv@latest && \
 # Set the working directory inside the container
 WORKDIR /app
 
-# Copy go.mod and go.sum files first, to cache dependencies
-COPY ./services/assets/go.mod ./services/assets/go.sum ./
-RUN go mod download
+# Copy go.mod and go.sum files first, to cache common dependencies
+COPY go.mod go.sum ./
 
 # Expose debugging port
 EXPOSE 40000

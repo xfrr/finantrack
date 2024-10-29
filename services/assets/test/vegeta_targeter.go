@@ -26,6 +26,45 @@ type TargetConfig struct {
 	ReportPath  string
 }
 
+func main() {
+	// Configure the list of target URLs and their settings.
+	targetConfigs := []TargetConfig{
+		{
+			URLTemplate: "http://localhost:6000/api/v1/assets/%s",
+			Method:      "POST",
+			Header: map[string][]string{
+				"Content-Type": {"application/json"},
+			},
+			Body: []byte(`{
+				"assetMoneyAmount": 1000,
+				"assetMoneyCurrency": "USD",
+				"assetName": "My Asset",
+				"assetType": "cash"
+			}`),
+			ReportPath: "./reports/vegeta-report-create-asset-mongodb.hgrm",
+		},
+		// Additional targets can be added here.
+	}
+
+	// Set up the load test configuration.
+	config := Config{
+		Duration: 10 * time.Second,
+		RateFreq: 100,
+		RatePer:  time.Second,
+	}
+
+	// For each target configuration, execute the attack.
+	for _, tc := range targetConfigs {
+		// Initialize the targeter with the target configuration.
+		targeter := newDynamicTargeter(tc)
+
+		// Execute the load test attack for this target.
+		if err := executeAttack(config, targeter, tc.ReportPath); err != nil {
+			log.Fatalf("Error executing attack for target %s: %v", tc.URLTemplate, err)
+		}
+	}
+}
+
 // newDynamicTargeter creates a vegeta.Targeter for a single target configuration.
 func newDynamicTargeter(tc TargetConfig) vegeta.Targeter {
 	return func(tgt *vegeta.Target) error {
@@ -72,43 +111,4 @@ func executeAttack(config Config, targeter vegeta.Targeter, reportPath string) e
 
 	log.Printf("Report saved to %s", f.Name())
 	return nil
-}
-
-func main() {
-	// Configure the list of target URLs and their settings.
-	targetConfigs := []TargetConfig{
-		{
-			URLTemplate: "http://localhost:6000/api/v1/assets/%s",
-			Method:      "POST",
-			Header: map[string][]string{
-				"Content-Type": {"application/json"},
-			},
-			Body: []byte(`{
-				"assetMoneyAmount": 1000,
-				"assetMoneyCurrency": "USD",
-				"assetName": "My Asset",
-				"assetType": "cash"
-			}`),
-			ReportPath: "./reports/vegeta-report-create-asset.hgrm",
-		},
-		// Additional targets can be added here.
-	}
-
-	// Set up the load test configuration.
-	config := Config{
-		Duration: 5 * time.Second,
-		RateFreq: 100,
-		RatePer:  time.Second,
-	}
-
-	// For each target configuration, execute the attack.
-	for _, tc := range targetConfigs {
-		// Initialize the targeter with the target configuration.
-		targeter := newDynamicTargeter(tc)
-
-		// Execute the load test attack for this target.
-		if err := executeAttack(config, targeter, tc.ReportPath); err != nil {
-			log.Fatalf("Error executing attack for target %s: %v", tc.URLTemplate, err)
-		}
-	}
 }

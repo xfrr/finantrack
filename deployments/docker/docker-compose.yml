@@ -20,14 +20,14 @@ services:
       - FINANCES_MANAGER_DB_URI=${FINANCES_MANAGER_DB_URI}
       - OTEL_EXPORTER_OTLP_ENDPOINT=jaeger:4317
     depends_on:
-      - database
+      - es-mongodb
     working_dir: /app
     volumes:
       - ../..:/app
     networks:
       - finantrack-network
     links:
-      - database
+      - es-mongodb
 
   web:
     image: web:local
@@ -58,9 +58,17 @@ services:
     networks:
       - finantrack-network
 
-  database:
+  es-mongodb:
     image: mongo:latest
     ports:
       - '27017:27017'
+    networks:
+      - finantrack-network
+
+  es-immudb:
+    image: codenotary/immudb:latest
+    ports:
+      - '3322:3322'
+      - '9497:9497'
     networks:
       - finantrack-network

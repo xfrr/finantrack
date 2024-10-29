@@ -1,45 +1,85 @@
+
 # display all available commands
 default: help
 
-# build the Go applications
-go-build:
-  go build -o bin/ ./...
+# build the Go applications for all supported platforms
+build service:
+  # osx (apple silicon)
+  @GOARCH=arm64 GOOS=darwin go build -o bin/{{service}}-darwin-arm64 ./cmd/{{service}}
 
-# run the Go tests
-go-test:
-  go test ./... -v -cover
+  # osx (intel)
+  @GOARCH=amd64 GOOS=darwin go build -o bin/{{service}}-darwin-amd64 ./cmd/{{service}}
 
-# lint the Go codebase
-go-lint:
-  golangci-lint run --enable-all
+  # linux
+  @GOARCH=amd64 GOOS=linux go build -o bin/{{service}}-linux-amd64 ./cmd/{{service}}
 
-# format the Go codebase using gofmt
-go-format:
-  gofmt -s -w .
+  # windows
+  @GOARCH=amd64 GOOS=windows go build -o bin/{{service}}-windows-amd64.exe ./cmd/{{service}}
+
+build-web:
+  @GOARCH=wasm GOOS=js go build -o web/app.wasm ./cmd/web
+
+# run all tests
+test:
+  @go test ./... -v -cover
+
+# lint codebase
+lint:
+  @golangci-lint run --enable-all
+
+# format the codebase
+format:
+  # format Go code
+  @gofmt -s -w .
+  # format swag docs
+  @swag fmt --dir services/assets/http
+
+# start the docker-compose stack for local development
+up:
+  @docker-compose -f deployments/docker/docker-compose.yml --env-file deployments/docker/.env up -d --build
+
+# start and rebuild the docker-compose stack for local development
+up-build:
+  @docker-compose -f deployments/docker/docker-compose.yml --env-file deployments/docker/.env up --build -d --force-recreate
+
+# stop the docker-compose stack for local development
+down:
+  @docker-compose -f deployments/docker/docker-compose.yml --env-file deployments/docker/.env down
+
+# restart the docker-compose stack for local development
+restart:
+  @docker-compose -f deployments/docker/docker-compose.yml --env-file deployments/docker/.env restart
 
 # clean up the project's build and test artifacts
 clean:
-  rm -rf bin/
-  rm -rf vendor/
-  rm -rf .env
-  rm -rf .cache
-  rm -rf .coverage
+  @rm -rf bin/
+  @rm -rf vendor/
+  @rm -rf .env
+  @rm -rf .cache
+  @rm -rf .coverage
 
-up:
-  docker-compose -f deployments/docker/docker-compose.yml --env-file deployments/docker/.env up -d --build
+clean-docker:
+  @docker system prune -f
+
+# generate and serve documentation
+docs:
+  # generate assets swagger docs
+  @swag init \
+    --parseDependency \
+    --parseDepth 2 \
+    --outputTypes go,yaml \
+    -d services/assets/http \
+    -g http_server.go \
+    -o docs/swagger-assets-http-api \
+
+# run the vegeta load tests
+vegeta service:
+    @cd services/{{service}}/test && go run vegeta_targeter.go
+    @echo "Plot it at 'https://hdrhistogram.github.io/HdrHistogram/plotFiles.html'"
 
 # display all available commands
 help:
-  @echo "Usage: make <target>"
-  @echo ""
-  @echo "Targets:"
-  @echo "  go-build    - Build the Go project"
-  @echo "  go-test     - Run the Go tests"
-  @echo "  go-lint     - Lint the Go codebase"
-  @echo "  go-format   - Format the Go codebase"
-  @echo "  clean       - Clean up the project's build and test artifacts"
-  @echo "  docs        - Generate and serve documentation"
-  @echo "  help        - Display this help message"
+  @just --list
 
 
   

@@ -1,0 +1,123 @@
+basePath: /api/v1
+definitions:
+  assetshttp.CreateAssetRequest:
+    properties:
+      assetMoneyAmount:
+        example: 1000
+        type: number
+      assetMoneyCurrency:
+        example: USD
+        type: string
+      assetName:
+        example: My Asset
+        type: string
+      assetType:
+        example: cash
+        type: string
+    type: object
+  assetshttp.ModifyAssetRequest:
+    properties:
+      asset_money_amount:
+        type: number
+      asset_money_currency:
+        type: string
+      asset_name:
+        type: string
+      asset_type:
+        type: string
+    required:
+    - asset_money_amount
+    - asset_money_currency
+    - asset_name
+    - asset_type
+    type: object
+host: localhost:6000
+info:
+  contact:
+    name: API Support
+  description: This is the API for managing assets in the Finantrack application.
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  title: Asset Management APIs
+  version: "1.0"
+paths:
+  /assets/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete an asset
+      parameters:
+      - default: 00000000-0000-0000-0000-000000000000
+        description: Asset ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: Delete an asset
+      tags:
+      - assets
+    post:
+      consumes:
+      - application/json
+      description: Create a new asset
+      parameters:
+      - default: 00000000-0000-0000-0000-000000000000
+        description: Asset ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Asset data
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/assetshttp.CreateAssetRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: Create a new asset
+      tags:
+      - assets
+    put:
+      consumes:
+      - application/json
+      description: Modify an asset
+      parameters:
+      - default: 00000000-0000-0000-0000-000000000000
+        description: Asset ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Asset data
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/assetshttp.ModifyAssetRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: Modify an asset
+      tags:
+      - assets
+schemes:
+- http
+swagger: "2.0"

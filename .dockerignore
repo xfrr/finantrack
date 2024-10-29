@@ -23,3 +23,33 @@
 **/values.dev.yaml
 LICENSE
 README.md
+
+# Deployment files
+deployments
+
+# Terraform files
+**/.terraform
+**/terraform.tfstate
+**/terraform.tfstate.backup
+**/terraform.tfvars
+
+# Go
+vendor/
+*.so
+*.test
+*.prof
+*.exe
+*.exe~
+*.dll
+*.dll~
+*.out
+*.wasm
+
+# Testdata
+testdata
+plot.html
+# Testdata
+testdata
+plot.html
+metrics.json
+results.bin

@@ -6,13 +6,17 @@ import (
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
+	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/sdk/resource"
+	"go.opentelemetry.io/otel/trace"
 
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.4.0"
 )
 
-func InitOpenTelemetryTracer(ctx context.Context, serviceName, collectorURL string) (*otlptrace.Exporter, error) {
+func NewOtelTracerProvider(ctx context.Context, serviceName, collectorURL string) (trace.Tracer, func(), error) {
+	var closer func()
+
 	resources, err := resource.New(ctx,
 		resource.WithFromEnv(),
 		resource.WithProcess(),
@@ -24,7 +28,7 @@ func InitOpenTelemetryTracer(ctx context.Context, serviceName, collectorURL stri
 		),
 	)
 	if err != nil {
-		return nil, err
+		return nil, closer, err
 	}
 
 	traceClient := otlptracegrpc.NewClient(
@@ -36,16 +40,24 @@ func InitOpenTelemetryTracer(ctx context.Context, serviceName, collectorURL stri
 		traceClient,
 	)
 	if err != nil {
-		return nil, err
+		return nil, closer, err
 	}
 
-	otel.SetTracerProvider(
-		sdktrace.NewTracerProvider(
-			// sdktrace.WithSampler(sdktrace.AlwaysSample()),
-			sdktrace.WithBatcher(exporter),
-			sdktrace.WithResource(resources),
-		),
+	tracerProvider := sdktrace.NewTracerProvider(
+		// sdktrace.WithSampler(sdktrace.AlwaysSample()),
+		sdktrace.WithBatcher(exporter),
+		sdktrace.WithResource(resources),
 	)
 
-	return exporter, nil
+	otel.SetTracerProvider(tracerProvider)
+	otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(propagation.TraceContext{}, propagation.Baggage{}))
+
+	closer = func() {
+		err = tracerProvider.Shutdown(ctx)
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	return tracerProvider.Tracer(serviceName), closer, nil
 }

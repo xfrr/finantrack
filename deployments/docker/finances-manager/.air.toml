@@ -3,25 +3,28 @@
 # Working directory
 # . or absolute path, please note that the directories following must be under root.
 root = "."
-tmp_dir = "tmp"
+tmp_dir = "bin"
 
 [build]
+pre_cmd = ["just docs"]
 # Array of commands to run before each build
 # pre_cmd = ["echo 'hello air' > pre_cmd.txt"]
 # Just plain old shell command. You could use `make` as well.
-cmd = "go build -o ./tmp/finances-manager ./cmd/finances-manager"
+cmd = "go build -o ./bin/finances-manager ./cmd/finances-manager"
+# Array of commands to run after each successful build
+post_cmd = []
 # Array of commands to run after ^C
 # post_cmd = ["echo 'hello air' > post_cmd.txt"]
 # Binary file yields from `cmd`.
-bin = "tmp/finances-manager"
+bin = "bin/finances-manager"
 # Customize binary, can setup environment variables when run your app.
-full_bin = "./tmp/finances-manager"
+full_bin = "./bin/finances-manager"
 # Add additional arguments when running binary (bin/full_bin). Will run './tmp/finances-manager hello world'.
 # args_bin = ["hello", "world"]
 # Watch these filename extensions.
 include_ext = ["go", "tpl", "tmpl", "yaml", "yml", "toml"]
 exclude_dir = [
-  "assets",
+  "docs",
   "vendor",
   "node_modules",
   ".git",
@@ -62,14 +65,14 @@ rerun_delay = 500
 [log]
 # Show log time
 time = false
-# Only show finances-manager log (silences watcher, build, runner)
-finances-manager_only = false
+# Only show main log (silences watcher, build, runner)
+main_only = false
 # silence all logs produced by air 
 silent = false
 
 [color]
 # Customize each part's color. If no color found, use the raw app log.
-finances-manager = "magenta"
+main = "magenta"
 watcher = "cyan"
 build = "yellow"
 runner = "green"

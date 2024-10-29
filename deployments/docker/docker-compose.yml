@@ -11,24 +11,39 @@ services:
       ['air', '-c', '/app/deployments/docker/finances-manager/.air.toml']
     build:
       context: ../../
-      dockerfile: ./deployments/docker/debug.go.Dockerfile
-      args:
-        - APP_NAME=finances-manager
+      dockerfile: ./deployments/docker/finances-manager/debug.go.Dockerfile
     ports:
       # http rest api
       - '6000:6000'
     environment:
       - FINANCES_MANAGER_HTTP_SERVER_PORT=6000
-      - FINANCES_MANAGER_DATABASE_CONNECTION_STRING=${FINANCES_MANAGER_DATABASE_CONNECTION_STRING}
+      - FINANCES_MANAGER_DB_URI=${FINANCES_MANAGER_DB_URI}
       - OTEL_EXPORTER_OTLP_ENDPOINT=jaeger:4317
     depends_on:
       - database
+    working_dir: /app
     volumes:
-      - ../../:/app
+      - ../..:/app
     networks:
       - finantrack-network
     links:
       - database
+
+  web:
+    image: web:local
+    entrypoint: ['air', '-c', '/app/deployments/docker/web/.air.toml']
+    build:
+      context: ../../
+      dockerfile: ./deployments/docker/web/debug.go.Dockerfile
+    ports:
+      # http rest api
+      - '8000:8000'
+    environment:
+      - WEB_HTTP_SERVER_PORT=8000
+    volumes:
+      - ../..:/app
+    networks:
+      - finantrack-network
 
   jaeger:
     image: jaegertracing/all-in-one:latest

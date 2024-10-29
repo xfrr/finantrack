@@ -1,7 +1,7 @@
 # Development Stage
 FROM golang:1.23-alpine AS dev
 
-ARG APP_NAME
+ARG APP_NAME "web"
 
 # Set app_name environment variable
 ENV APP_NAME=${APP_NAME}
@@ -18,14 +18,11 @@ RUN go install github.com/go-delve/delve/cmd/dlv@latest
 WORKDIR /app
 
 # Copy go.mod and go.sum files first, to cache dependencies
-COPY go.mod go.sum ./
+COPY ./web/go.mod ./web/go.sum ./
 RUN go mod download
 
-# Copy the rest of the application source code
-COPY . .
-
-# Expose the application port (default Go port 8080)
-EXPOSE 3000
+# Expose debugging port
+EXPOSE 40000
 
 # Start Air for live-reloading, exposing Delve for debugging on port 40000
 ENTRYPOINT ["/bin/bash", "-c", "/app/deployments/docker/entrypoint.sh"]

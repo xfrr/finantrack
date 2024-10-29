@@ -4,10 +4,10 @@
 
 ## 📊 Overview
 
-**FinanTrack** is an open-source personal finance management tool designed to help you track income, expenses, and savings with ease. The app allows you to categorize your transactions, set financial goals, and generate insightful reports, giving you full control over your finances.
+**FinanTrack** is an open-source personal finance management tool designed to help you track income, expenses, and savings with ease. The app allows you to categorize your expenses, set financial goals, and generate insightful reports, giving you full control over your finances.
 
 ### 🌟 Features
-- 🧾 **Track Expenses & Income**: Categorize transactions and gain a clear view of your finances.
+- 🧾 **Track Expenses & Income**: Categorize expenses and gain a clear view of your finances.
 - 💡 **Custom Financial Goals**: Set and track your savings goals and budgets.
 - 📈 **Generate Reports**: Monthly, quarterly, and yearly reports on your financial health.
 - 🔐 **Secure & Private**: Your data is securely stored and only accessible to you.
@@ -61,7 +61,7 @@ just help
 
 
 ## 📜 Usage
-Once the application is running, open your browser and navigate to http://localhost:8080. You can start managing your finances by creating accounts, adding transactions, and setting financial goals.
+Once the application is running, open your browser and navigate to http://localhost:8080. You can start managing your finances by creating accounts, adding expenses, and setting financial goals.
 
 API Documentation
 FinanTrack comes with a RESTful API for integration with external systems or mobile apps. You can check the API documentation by visiting http://localhost:8080/docs once the app is up and running.

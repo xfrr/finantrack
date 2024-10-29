@@ -21,7 +21,7 @@ RUN go install github.com/go-delve/delve/cmd/dlv@latest && \
 WORKDIR /app
 
 # Copy go.mod and go.sum files first, to cache dependencies
-COPY ./internal/contexts/assets/go.mod ./internal/contexts/assets/go.sum ./
+COPY ./services/assets/go.mod ./services/assets/go.sum ./
 RUN go mod download
 
 # Expose debugging port
